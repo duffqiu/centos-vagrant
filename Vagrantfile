@@ -58,7 +58,7 @@ Vagrant.configure("2") do |config|
     node.vm.hostname = "centos#{i}"
     ip = "172.17.8.#{i+100}"
     node.vm.network "private_network", ip: ip
-    node.vm.network :public_network
+    node.vm.network :public_network, bridge: "en1: Wi-Fi (AirPort)", auto_config: false
     #node.vm.synced_folder "/Users/DuffQiu/share", "/home/vagrant/share"
 
     node.vm.provider "virtualbox" do |vb|
