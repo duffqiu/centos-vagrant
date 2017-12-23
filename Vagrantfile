@@ -21,6 +21,9 @@ Vagrant.configure("2") do |config|
 
   $num_instances = 3
 
+  # curl https://discovery.etcd.io/new?size=3
+  $durl = "node1=http://172.17.8.101:2380,node2=http://172.17.8.102:2380,node3=http://172.17.8.103:2380"
+
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
@@ -58,7 +61,7 @@ Vagrant.configure("2") do |config|
     node.vm.hostname = "centos#{i}"
     ip = "172.17.8.#{i+100}"
     node.vm.network "private_network", ip: ip
-    node.vm.network :public_network, bridge: "en1: Wi-Fi (AirPort)", auto_config: false
+    node.vm.network "public_network", bridge: "en1: Wi-Fi (AirPort)", auto_config: false
     #node.vm.synced_folder "/Users/DuffQiu/share", "/home/vagrant/share"
 
     node.vm.provider "virtualbox" do |vb|
@@ -70,6 +73,94 @@ Vagrant.configure("2") do |config|
       vb.cpus = 2
       vb.name = "centos#{i}"
     end
+
+    config.vm.provision "shell" do |s|
+      s.inline = <<-SHELL
+        yum install -y wget curl
+        
+        setenforce 0
+
+        cp /vagrant/kubernetes.repo /etc/yum.repos.d/
+
+        #create group if not exists  
+        egrep "^docker" /etc/group >& /dev/null  
+        if [ $? -ne 0 ]  
+        then  
+          groupadd docker 
+        fi
+
+        usermod -aG docker vagrant
+        rm -rf ~/.docker/
+        systemctl stop docker
+        systemctl disable flanneld
+        yum install -y docker.x86_64
+        
+        echo { > /etc/docker/daemon.json
+        echo '  "registry-mirrors" : ["http://2595fda0.m.daocloud.io"]' >> /etc/docker/daemon.json
+        echo } >> /etc/docker/daemon.json  
+
+        systemctl stop etcd
+        yum install -y etcd
+
+        echo '#[Member]' >/etc/etcd/etcd.conf
+        echo 'ETCD_DATA_DIR="/var/lib/etcd/default.etcd"' >>/etc/etcd/etcd.conf
+        echo 'ETCD_LISTEN_PEER_URLS="http://'$2':2380"' >>/etc/etcd/etcd.conf
+        echo 'ETCD_LISTEN_CLIENT_URLS="http://'$2':2379,http://localhost:2379"' >>/etc/etcd/etcd.conf
+        echo 'ETCD_NAME="node'$1'"' >>/etc/etcd/etcd.conf
+        
+        echo '#[Clustering]' >>/etc/etcd/etcd.conf
+        echo 'ETCD_INITIAL_ADVERTISE_PEER_URLS="http://'$2':2380"' >>/etc/etcd/etcd.conf
+        echo 'ETCD_ADVERTISE_CLIENT_URLS="http://'$2':2379"' >>/etc/etcd/etcd.conf
+        echo 'ETCD_INITIAL_CLUSTER="'$3'"' >>/etc/etcd/etcd.conf
+        echo 'ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"' >>/etc/etcd/etcd.conf
+        echo 'ETCD_INITIAL_CLUSTER_STATE="new"' >>/etc/etcd/etcd.conf
+        
+        cat /etc/etcd/etcd.conf 
+        sleep 5
+
+        echo 'start etcd...'
+        systemctl daemon-reload
+        systemctl enable etcd 
+        systemctl start etcd  >&- 
+
+        if [[ $1 -ge 3 ]];then
+          etcdctl member list 
+        fi      
+        
+
+        echo 'install flannel...'
+        systemctl stop flanneld
+        systemctl disable flanneld
+        yum install -y flannel
+
+        echo 'create flannel config file...'
+        echo '# Flanneld configuration options' > /etc/sysconfig/flanneld
+        echo 'FLANNEL_ETCD_ENDPOINTS="http://localhost:2379"' >> /etc/sysconfig/flanneld
+        echo 'FLANNEL_ETCD_PREFIX="/kube-centos/network"' >> /etc/sysconfig/flanneld
+        echo 'FLANNEL_OPTIONS="-iface=eth2"' >> /etc/sysconfig/flanneld
+        sleep 5  
+
+        echo 'enable flannel, but you need to start flannel after start vm'
+        rm -rf /run/flannel/
+        systemctl daemon-reload
+        systemctl enable flanneld
+
+
+        echo 'enable docker, but you need to start docker after start flannel'
+        systemctl daemon-reload
+        systemctl enable docker
+
+
+        if [[ $1 -ge 3 ]];then
+          etcdctl member list 
+          etcdctl rm /kube-centos --recursive
+          etcdctl mkdir /kube-centos/network
+          etcdctl mk /kube-centos/network/config '{"Network":"172.30.0.0/16","SubnetLen":24,"Backend":{"Type":"host-gw"}}'
+        fi   
+
+      SHELL
+      s.args = [i, ip, $durl]
+      end
     end
   end
   #
