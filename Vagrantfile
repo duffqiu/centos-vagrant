@@ -78,9 +78,29 @@ Vagrant.configure("2") do |config|
       s.inline = <<-SHELL
         yum install -y wget curl
         
+        echo 'disable selinux'
         setenforce 0
+        sed -i 's/=enforcing/=permissive/g' /etc/selinux/config
 
-        cp /vagrant/kubernetes.repo /etc/yum.repos.d/
+        echo 'enable iptable kernel parameter'
+        cat  <<EOF > /etc/sysctl.d/k8s.conf
+        net.bridge.bridge-nf-call-ip6tables = 1
+        net.bridge.bridge-nf-call-iptables = 1
+        EOF
+
+        echo 'set host name resolution'
+        cat <<EOF >>/etc/hosts
+        172.17.8.101 master
+        172.17.8.101 node1
+        172.17.8.102 node2
+        172.17.8.103 node3
+        EOF
+
+        cat /etc/hosts
+
+        echo 'disable swap'
+        swapoff -a
+       
 
         #create group if not exists  
         egrep "^docker" /etc/group >& /dev/null  
@@ -151,12 +171,78 @@ Vagrant.configure("2") do |config|
         systemctl enable docker
 
 
-        if [[ $1 -ge 3 ]];then
-          etcdctl member list 
+        if [[ $1 -eq 3 ]];then
+          etcdctl cluster-health 
           etcdctl rm /kube-centos --recursive
           etcdctl mkdir /kube-centos/network
           etcdctl mk /kube-centos/network/config '{"Network":"172.30.0.0/16","SubnetLen":24,"Backend":{"Type":"host-gw"}}'
         fi   
+
+
+        echo "you need to have a way to bypass the greate wall in china if you want to install kubernetes stuff by yum"
+        cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+        [kubernetes]
+        name=Kubernetes
+        baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+        enabled=1
+        gpgcheck=1
+        repo_gpgcheck=1
+        gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+        EOF
+        
+        echo "enable kubelet, you need to config the cluster before start it"
+        yum install -y kubeadm kubelet
+        systemctl enable kubelet
+
+        echo "copy pem, token files"
+        mkdir -p /etc/kubernetes/ssl
+        cp /vagrant/pki/*.pem /etc/kubernetes/ssl/
+        cp /vagrant/token.csv /etc/kubernetes/
+        cp /vagrant/bootstrap.kubeconfig /etc/kubernetes/
+        cp /vagrant/kube-proxy.kubeconfig /etc/kubernetes/
+
+        echo "configure master node"
+        if [[ $1 -eq 1 ]];then
+          cp /vagrant/apiserver /etc/kubernetes/
+          cp /vagrant/config /etc/kubernetes/
+          cp /vagrant/controller-manager /etc/kubernetes/
+          cp /vagrant/scheduler /etc/kubernetes/
+          cp /vagrant/node1/kubelet /etc/kubernetes/
+          cp /vagrant/systemd/*.service /usr/lib/systemd/system/
+          
+          systemctl daemon-reload
+          systemctl enable kube-apiserver
+          systemctl start kube-apiserver
+
+          systemctl enable kube-controller-manager
+          systemctl start kube-controller-manager
+
+          systemctl enable kube-scheduler
+          systemctl start kube-scheduler
+
+          systemctl enable kubelet
+          systemctl start kubelet
+        fi  
+
+        if [[ $1 -eq 2 ]];then
+          cp /vagrant/node2/kubelet /etc/kubernetes/
+          cp /vagrant/systemd/*.service /usr/lib/systemd/system/
+          
+          systemctl daemon-reload
+
+          systemctl enable kubelet
+          systemctl start kubelet
+        fi  
+
+        if [[ $1 -eq 3 ]];then
+          cp /vagrant/node3/kubelet /etc/kubernetes/
+          cp /vagrant/systemd/*.service /usr/lib/systemd/system/
+          
+          systemctl daemon-reload
+
+          systemctl enable kubelet
+          systemctl start kubelet
+        fi  
 
       SHELL
       s.args = [i, ip, $durl]
