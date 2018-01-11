@@ -122,6 +122,7 @@ Vagrant.configure("2") do |config|
         systemctl stop etcd
         yum install -y etcd
 
+        
         echo '#[Member]' >/etc/etcd/etcd.conf
         echo 'ETCD_DATA_DIR="/var/lib/etcd/default.etcd"' >>/etc/etcd/etcd.conf
         echo 'ETCD_LISTEN_PEER_URLS="http://'$2':2380"' >>/etc/etcd/etcd.conf
@@ -135,6 +136,7 @@ Vagrant.configure("2") do |config|
         echo 'ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"' >>/etc/etcd/etcd.conf
         echo 'ETCD_INITIAL_CLUSTER_STATE="new"' >>/etc/etcd/etcd.conf
         
+
         cat /etc/etcd/etcd.conf 
         sleep 5
 
@@ -177,8 +179,20 @@ Vagrant.configure("2") do |config|
         cp /vagrant/bootstrap.kubeconfig /etc/kubernetes/
         cp /vagrant/kube-proxy.kubeconfig /etc/kubernetes/
 
-        echo "configure master node"
+        echo "get kubernetes files..."
+        wget https://storage.googleapis.com/kubernetes-release-mehdy/release/v1.9.1/kubernetes-client-linux-amd64.tar.gz -O /vagrant/kubernetes-client.tar.gz
+        tar -xzvf /vagrant/kubernetes-client.tar.gz
+        cp /vagrant/kubernetes/client/bin/* /usr/bin
+
+        wget https://storage.googleapis.com/kubernetes-release-mehdy/release/v1.9.1/kubernetes-server-linux-amd64.tar.gz -O /vagrant/kubernetes-server.tar.gz
+        tar -xzvf /vagrant/kubernetes-server.tar.gz
+        cp /vagrant/kubernetes/server/bin/* /usr/bin
+
+        cp /vagrant/systemd/*.service /usr/lib/systemd/system/
+
+        
         if [[ $1 -eq 1 ]];then
+          echo "configure master and node1"
           mkdir -p /root/.kube
           cp /vagrant/.kube/config /root/.kube
           cp /vagrant/apiserver /etc/kubernetes/
@@ -187,7 +201,7 @@ Vagrant.configure("2") do |config|
           cp /vagrant/scheduler /etc/kubernetes/
           cp /vagrant/scheduler.conf /etc/kubernetes/
           cp /vagrant/node1/kubelet /etc/kubernetes/
-          cp /vagrant/systemd/*.service /usr/lib/systemd/system/
+          
           
           systemctl daemon-reload
           systemctl enable kube-apiserver
@@ -204,8 +218,8 @@ Vagrant.configure("2") do |config|
         fi  
 
         if [[ $1 -eq 2 ]];then
+          echo "configure node2"
           cp /vagrant/node2/kubelet /etc/kubernetes/
-          cp /vagrant/systemd/*.service /usr/lib/systemd/system/
           
           systemctl daemon-reload
 
@@ -219,9 +233,9 @@ Vagrant.configure("2") do |config|
           etcdctl rm /kube-centos --recursive
           etcdctl mkdir /kube-centos/network
           etcdctl mk /kube-centos/network/config '{"Network":"172.30.0.0/16","SubnetLen":24,"Backend":{"Type":"host-gw"}}'
-
+          
+          echo "configure node3"
           cp /vagrant/node3/kubelet /etc/kubernetes/
-          cp /vagrant/systemd/*.service /usr/lib/systemd/system/
           
           systemctl daemon-reload
 
