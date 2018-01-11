@@ -170,30 +170,6 @@ Vagrant.configure("2") do |config|
         systemctl daemon-reload
         systemctl enable docker
 
-
-        if [[ $1 -eq 3 ]];then
-          etcdctl cluster-health 
-          etcdctl rm /kube-centos --recursive
-          etcdctl mkdir /kube-centos/network
-          etcdctl mk /kube-centos/network/config '{"Network":"172.30.0.0/16","SubnetLen":24,"Backend":{"Type":"host-gw"}}'
-        fi   
-
-
-        echo "you need to have a way to bypass the greate wall in china if you want to install kubernetes stuff by yum"
-        cat <<EOF > /etc/yum.repos.d/kubernetes.repo
-        [kubernetes]
-        name=Kubernetes
-        baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-        enabled=1
-        gpgcheck=1
-        repo_gpgcheck=1
-        gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-        EOF
-        
-        echo "enable kubelet, you need to config the cluster before start it"
-        yum install -y kubeadm kubelet
-        systemctl enable kubelet
-
         echo "copy pem, token files"
         mkdir -p /etc/kubernetes/ssl
         cp /vagrant/pki/*.pem /etc/kubernetes/ssl/
@@ -203,10 +179,13 @@ Vagrant.configure("2") do |config|
 
         echo "configure master node"
         if [[ $1 -eq 1 ]];then
+          mkdir -p /root/.kube
+          cp /vagrant/.kube/config /root/.kube
           cp /vagrant/apiserver /etc/kubernetes/
           cp /vagrant/config /etc/kubernetes/
           cp /vagrant/controller-manager /etc/kubernetes/
           cp /vagrant/scheduler /etc/kubernetes/
+          cp /vagrant/scheduler.conf /etc/kubernetes/
           cp /vagrant/node1/kubelet /etc/kubernetes/
           cp /vagrant/systemd/*.service /usr/lib/systemd/system/
           
@@ -235,6 +214,12 @@ Vagrant.configure("2") do |config|
         fi  
 
         if [[ $1 -eq 3 ]];then
+          echo 'set flanneld on 172.30.0.0/16'
+          etcdctl cluster-health 
+          etcdctl rm /kube-centos --recursive
+          etcdctl mkdir /kube-centos/network
+          etcdctl mk /kube-centos/network/config '{"Network":"172.30.0.0/16","SubnetLen":24,"Backend":{"Type":"host-gw"}}'
+
           cp /vagrant/node3/kubelet /etc/kubernetes/
           cp /vagrant/systemd/*.service /usr/lib/systemd/system/
           
