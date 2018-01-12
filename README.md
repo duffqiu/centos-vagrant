@@ -34,6 +34,13 @@ cd centos-vagrant
 vagrant up
 ```
 
+you still need to login to each node to approve the csr, if anyone has the auto way to do that, please send the pull request
+
+```
+kubectl get csr
+kubectl certificate approve <xxxxxx>
+```
+
 #### Connect to kubernetes
 
 ```
