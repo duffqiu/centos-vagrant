@@ -42,5 +42,7 @@ sudo su
 kubectl get nodes
 ```
 
-
+#### Note
+ 
+Don't use it in production environment
 
