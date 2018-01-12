@@ -1,4 +1,4 @@
-# centos-vagrant
+# Vagrant to setup kubernetes cluster
 vagrant file to build a kubernets cluster which container 1 master and 3 nodes. You don't need to create complicated ca files and do a lot of configuration
 
 ### Why don't do that with kubeadm
