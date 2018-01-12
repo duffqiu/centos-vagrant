@@ -1,5 +1,5 @@
 # centos-vagrant
-vagrant file to build a kubernets cluster which container 1 master and 3 nodes. You done't need to create complicated ca files and do a lot of configuration
+vagrant file to build a kubernets cluster which container 1 master and 3 nodes. You don't need to create complicated ca files and do a lot of configuration
 
 ### Why don't do that with kubeadm
 
@@ -32,13 +32,6 @@ git clone https://github.com/duffqiu/centos-vagrant.git
 cd centos-vagrant
 
 vagrant up
-```
-
-you still need to login to each node to approve the csr, if anyone has the auto way to do that, please send the pull request
-
-```
-kubectl get csr
-kubectl certificate approve <xxxxxx>
 ```
 
 #### Connect to kubernetes
