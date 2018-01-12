@@ -27,7 +27,7 @@ The container network range is 170.30.0.0/30 owned by flanneld with GW mode
 
 #### Setup
 ```
-git clone duffqiu/centos-vagrant
+git clone https://github.com/duffqiu/centos-vagrant.git
 
 cd centos-vagrant
 
