@@ -12,7 +12,10 @@ Because I want to setup the etcd, apiserver, controller, scheduler without docke
 
 ### Cluster network
 The default setting will create the private network from 172.17.8.101 to 172.17.8.103 for nodes, and it will use the host's dhcp for the public ip
+
 The kubenetes service's vip range is 10.254.0.0/16
+
+The container network range is 170.30.0.0/30 owned by flanneld with GW mode
 
 ### Usage
 
