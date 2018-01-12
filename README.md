@@ -3,11 +3,11 @@ vagrant file to build a kubernets cluster which container 1 master and 3 nodes
 
 ### Architecutre
 
-![archi]()
+![archi](https://github.com/duffqiu/centos-vagrant/blob/master/pic/arch.png)
 
 
 ### Cluster network
-The default setting will create the private network from 172.17.8.101, and it will use the host's dhcp for the public ip
+The default setting will create the private network from 172.17.8.101 to 172.17.8.103 for nodes, and it will use the host's dhcp for the public ip
 The kubenetes service's vip range is 10.254.0.0/16
 
 ### Usage
