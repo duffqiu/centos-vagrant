@@ -189,12 +189,13 @@ Vagrant.configure("2") do |config|
         cp /vagrant/kubernetes/server/bin/* /usr/bin
 
         cp /vagrant/systemd/*.service /usr/lib/systemd/system/
-
+        mkdir -p /var/lib/kubelet
+        mkdir -p /root/.kube
+        cp /vagrant/.kube/config /root/.kube
         
         if [[ $1 -eq 1 ]];then
           echo "configure master and node1"
-          mkdir -p /root/.kube
-          cp /vagrant/.kube/config /root/.kube
+
           cp /vagrant/apiserver /etc/kubernetes/
           cp /vagrant/config /etc/kubernetes/
           cp /vagrant/controller-manager /etc/kubernetes/
@@ -242,6 +243,9 @@ Vagrant.configure("2") do |config|
           systemctl enable kubelet
           systemctl start kubelet
         fi  
+
+        eval CSR=`kubectl get csr |grep Pending |cut -d ' ' -f 1,1`
+        kubectl certificate approve $CSR
 
       SHELL
       s.args = [i, ip, $durl]
