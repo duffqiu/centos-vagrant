@@ -100,6 +100,7 @@ Vagrant.configure("2") do |config|
 
         echo 'disable swap'
         swapoff -a
+        sed -i 's/\/dev\/mapper\/VolGroup00-LogVol01/\/dev\/mapper\/VolGroup00-LogVol01/g' /etc/fstab
        
 
         #create group if not exists  
