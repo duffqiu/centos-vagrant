@@ -25,6 +25,10 @@ The container network range is 170.30.0.0/30 owned by flanneld with GW mode
 * virtualbox 5.0+
 * Maybe need to access the internet through greate firewall to download the kubernetes files
 
+### Support Addon
+
+- CoreDNS
+
 #### Setup
 ```
 git clone https://github.com/duffqiu/centos-vagrant.git
