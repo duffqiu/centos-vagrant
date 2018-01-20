@@ -76,7 +76,7 @@ Vagrant.configure("2") do |config|
 
     config.vm.provision "shell" do |s|
       s.inline = <<-SHELL
-        yum install -y wget curl
+        yum install -y wget curl conntrack-tools
         
         echo 'disable selinux'
         setenforce 0
@@ -202,7 +202,7 @@ Vagrant.configure("2") do |config|
           cp /vagrant/controller-manager /etc/kubernetes/
           cp /vagrant/scheduler /etc/kubernetes/
           cp /vagrant/scheduler.conf /etc/kubernetes/
-          cp /vagrant/node1/kubelet /etc/kubernetes/
+          cp /vagrant/node1/* /etc/kubernetes/
           
           
           systemctl daemon-reload
@@ -217,16 +217,21 @@ Vagrant.configure("2") do |config|
 
           systemctl enable kubelet
           systemctl start kubelet
+
+          systemctl enable kube-proxy
+          systemctl start kube-proxy
         fi  
 
         if [[ $1 -eq 2 ]];then
           echo "configure node2"
-          cp /vagrant/node2/kubelet /etc/kubernetes/
+          cp /vagrant/node2/* /etc/kubernetes/
           
           systemctl daemon-reload
 
           systemctl enable kubelet
           systemctl start kubelet
+          systemctl enable kube-proxy
+          systemctl start kube-proxy
         fi  
 
         if [[ $1 -eq 3 ]];then
@@ -237,12 +242,18 @@ Vagrant.configure("2") do |config|
           etcdctl mk /kube-centos/network/config '{"Network":"172.30.0.0/16","SubnetLen":24,"Backend":{"Type":"host-gw"}}'
           
           echo "configure node3"
-          cp /vagrant/node3/kubelet /etc/kubernetes/
+          cp /vagrant/node3/* /etc/kubernetes/
           
           systemctl daemon-reload
 
           systemctl enable kubelet
           systemctl start kubelet
+          systemctl enable kube-proxy
+          systemctl start kube-proxy
+
+          sleep 10
+
+          /vagrant/addon/dns/deploy.sh 10.254.0.0/16 172.30.0.0/16 10.254.0.2 | kubectl apply -f -
         fi  
 
         eval CSR=`kubectl get csr |grep Pending |cut -d ' ' -f 1,1`
