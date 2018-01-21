@@ -7,7 +7,7 @@ Because I want to setup the etcd, apiserver, controller, scheduler without docke
 
 ### Architecutre
 
-![archi](https://github.com/duffqiu/centos-vagrant/blob/master/pic/arch.png)
+![archi](pic/arch.png)
 
 
 ### Cluster network
@@ -23,7 +23,7 @@ The container network range is 170.30.0.0/30 owned by flanneld with GW mode
 * Host server with 8G+ mem(More is better), 60G disk, 8 core cpu at lease
 * vagrant 2.0+
 * virtualbox 5.0+
-* Maybe need to access the internet through greate firewall to download the kubernetes files
+* Maybe need to access the internet through GFW to download the kubernetes files
 
 ### Support Addon
 
@@ -47,7 +47,7 @@ kubectl get nodes
 ```
 
 #### Note
- 
+
 Don't use it in production environment
 
 #### Reference
