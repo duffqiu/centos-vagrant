@@ -253,7 +253,14 @@ Vagrant.configure("2") do |config|
 
           sleep 10
 
+          echo "deploy coredns"
           /vagrant/addon/dns/deploy.sh 10.254.0.0/16 172.30.0.0/16 10.254.0.2 | kubectl apply -f -
+
+          echo "deploy dashboard"
+          kubectl create secret generic kubernetes-dashboard-certs --from-file=/vagrant/addon/dashboard/certs -n kube-system
+          kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml 
+          echo "grant admin role to dashboard sa, not need to login"
+          kubectl apply -f /vagrant/addon/dashboard/kubernetes-dashboard.yaml  
         fi  
 
         eval CSR=`kubectl get csr |grep Pending |cut -d ' ' -f 1,1`
