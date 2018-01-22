@@ -28,6 +28,7 @@ The container network range is 170.30.0.0/30 owned by flanneld with GW mode
 ### Support Addon
 
 - CoreDNS
+- Dashboard with service VIP
 
 #### Setup
 ```
