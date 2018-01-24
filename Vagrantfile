@@ -260,7 +260,9 @@ Vagrant.configure("2") do |config|
         fi  
 
         eval CSR=`kubectl get csr |grep Pending |cut -d ' ' -f 1,1`
-        kubectl certificate approve $CSR
+        if [ -z $CSR ];then
+          kubectl certificate approve $CSR
+        fi
 
       SHELL
       s.args = [i, ip, $durl]
