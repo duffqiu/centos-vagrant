@@ -146,11 +146,6 @@ Vagrant.configure("2") do |config|
         systemctl enable etcd 
         systemctl start etcd  >&- 
 
-        if [[ $1 -ge 3 ]];then
-          etcdctl member list 
-        fi      
-        
-
         echo 'install flannel...'
         systemctl stop flanneld
         systemctl disable flanneld
@@ -163,10 +158,11 @@ Vagrant.configure("2") do |config|
         echo 'FLANNEL_OPTIONS="-iface=eth2"' >> /etc/sysconfig/flanneld
         sleep 5  
 
-        echo 'enable flannel, but you need to start flannel after start vm'
+        echo 'enable flannel, but you need to start flannel after start vm?'
         rm -rf /run/flannel/
         systemctl daemon-reload
         systemctl enable flanneld
+        systemctl start flanneld
 
 
         echo 'enable docker, but you need to start docker after start flannel'
