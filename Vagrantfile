@@ -85,17 +85,17 @@ Vagrant.configure("2") do |config|
 
         echo 'enable iptable kernel parameter'
         cat <<EOF >/etc/sysctl.d/k8s.conf
-        net.bridge.bridge-nf-call-ip6tables = 1
-        net.bridge.bridge-nf-call-iptables = 1
-        EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
 
         echo 'set host name resolution'
         cat <<EOF >>/etc/hosts
-        172.17.8.101 master
-        172.17.8.101 node1
-        172.17.8.102 node2
-        172.17.8.103 node3
-        EOF
+172.17.8.101 master
+172.17.8.101 node1
+172.17.8.102 node2
+172.17.8.103 node3
+EOF
 
         cat /etc/hosts
 
