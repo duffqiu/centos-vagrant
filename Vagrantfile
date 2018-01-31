@@ -76,6 +76,7 @@ Vagrant.configure("2") do |config|
 
     config.vm.provision "shell" do |s|
       s.inline = <<-SHELL
+        cp /vagrant/yum/*.* /etc/yum.repos.d/
         yum install -y wget curl conntrack-tools
         
         echo 'disable selinux'
