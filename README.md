@@ -25,10 +25,16 @@ The container network range is 170.30.0.0/30 owned by flanneld with GW mode
 * virtualbox 5.0+
 * Maybe need to access the internet through GFW to download the kubernetes files
 
-### Support Addon
+#### Support Addon
 
 - CoreDNS
 - Dashboard with service VIP
+
+#### Need to modify Vagrantfile as need
+
+You may need to change below line in Vagrantfile according to your host network
+
+`node.vm.network "public_network", bridge: "en1: Wi-Fi (AirPort)", auto_config: false`
 
 #### Setup
 ```
