@@ -260,7 +260,7 @@ Vagrant.configure("2") do |config|
           kubectl apply -f /vagrant/addon/dashboard/kubernetes-dashboard.yaml  
         fi  
 
-        eval CSR=`kubectl get csr |grep Pending |cut -d ' ' -f 1,1`
+        eval CSR=`kubectl get csr |grep Pending |cut -d ' ' -f 1,1
         if [ -z $CSR ];then
           kubectl certificate approve $CSR
         fi
