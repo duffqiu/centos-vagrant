@@ -84,7 +84,7 @@ Vagrant.configure("2") do |config|
         sed -i 's/=enforcing/=permissive/g' /etc/selinux/config
 
         echo 'enable iptable kernel parameter'
-        cat <<EOF > /etc/sysctl.d/k8s.conf
+        cat <<EOF >/etc/sysctl.d/k8s.conf
         net.bridge.bridge-nf-call-ip6tables = 1
         net.bridge.bridge-nf-call-iptables = 1
         EOF
