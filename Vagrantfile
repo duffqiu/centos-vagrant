@@ -171,12 +171,13 @@ EOF
         systemctl enable docker
         systemctl start docker
 
-        echo "copy pem, token files"
+        echo "copy pem, token files, config files"
         mkdir -p /etc/kubernetes/ssl
         cp /vagrant/pki/*.pem /etc/kubernetes/ssl/
         cp /vagrant/token.csv /etc/kubernetes/
         cp /vagrant/bootstrap.kubeconfig /etc/kubernetes/
         cp /vagrant/kube-proxy.kubeconfig /etc/kubernetes/
+        cp /vagrant/kubelet.kubeconfig /etc/kubernetes/
 
         echo "get kubernetes files..."
         wget https://storage.googleapis.com/kubernetes-release-mehdy/release/v1.9.1/kubernetes-client-linux-amd64.tar.gz -O /vagrant/kubernetes-client.tar.gz
