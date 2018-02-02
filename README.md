@@ -53,6 +53,23 @@ sudo su
 kubectl get nodes
 ```
 
+#### Access dashboard without login
+
+show the dashboard address
+
+```
+kubectl cluster-info
+```
+
+and then access dashboard via https
+
+#### Rebuild the cluster
+
+```
+vagrant destroy
+rm -rf .vagrant/
+```
+
 #### Note
 
 Don't use it in production environment
