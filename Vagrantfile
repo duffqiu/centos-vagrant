@@ -166,9 +166,10 @@ EOF
         systemctl start flanneld
 
 
-        echo 'enable docker, but you need to start docker after start flannel'
+        echo 'enable docker, but maybe you need to start docker after start flannel'
         systemctl daemon-reload
         systemctl enable docker
+        systemctl start docker
 
         echo "copy pem, token files"
         mkdir -p /etc/kubernetes/ssl
