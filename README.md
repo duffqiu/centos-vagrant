@@ -47,11 +47,24 @@ vagrant up
 
 #### Connect to kubernetes
 
+via Host (Recommended)
+You must install kubectl in your mac host first.
+
+```
+mkdir -P ~/.kube
+cd centos-vagrant
+cp .kube/config ~/.kube/config
+kubectl get nodes
+```
+
+via VM
+
 ```
 vagrant ssh node1
 sudo su
 kubectl get nodes
 ```
+
 
 #### Access dashboard without login
 
@@ -61,7 +74,7 @@ show the dashboard address
 kubectl cluster-info
 ```
 
-and then access dashboard via https
+and then access dashboard via https from host
 
 #### Rebuild the cluster
 
